@@ -73,6 +73,7 @@ LOGGING_MODELS = (
 
 LOGGING_EXCLUDE = (
     'accounts.AdminOTP',     
+    'accounts.UserOTP',     
 )
 
 
