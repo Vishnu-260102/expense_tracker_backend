@@ -24,6 +24,7 @@ class ExpenseDetails(models.Model):
     expense_description = models.TextField()
     expense_date = models.DateField()
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
+    monthly_salary = models.ForeignKey('MonthlySalary', on_delete=models.PROTECT)
 
     def __str__(self) -> str:
         return 'Expense Details - ' + str(self.pk)

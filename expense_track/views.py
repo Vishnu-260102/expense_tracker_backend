@@ -31,13 +31,46 @@ class MonthlySalaryView(generics.GenericAPIView):
     serializer_class = MonthlySalarySerializer
 
     def get(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_200_OK)
+        monthly_salary = MonthlySalary.objects.filter(
+            year=request.data['year'], month=request.data['month'])
+        serializer = self.get_serializer(monthly_salary, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        request.data.update({"user": request.user.pk})
+        if (MonthlySalary.objects.filter(month=request.data['month']).exists()):
+            if (MonthlySalary.objects.filter(year=request.data['year']).exists()):
+                return Response({"message": "This month salary has been already Updated"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = MonthlySalarySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class ExpenseDetailsView(generics.GenericAPIView):
+class CurrentExpenseDetailsView(generics.GenericAPIView):
     permission_classes = [AllowAny]
     queryset = ExpenseDetails.objects.all()
     serializer_class = ExpenseDetailsSerializer
 
     def get(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_200_OK)
+        queryset = ExpenseDetails.objects.filter(
+            month=request.data['month'], year=request.data['year'])
+        serializer = ExpenseDetailsSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **Kwargs):
+        instance = {}
+        try:
+            monthly_salary = MonthlySalary.objects.filter(
+                year=request.data['year']).get(month=request.data['month'])
+            instance.update({"monthly_salary": monthly_salary.pk})
+            instance.update({"month": request.data['month'], "year": request.data['year'], "expense_name": request.data['expense_name'],
+                             "expense_description": request.data['expense_description'], "expense_date": request.data['expense_date'],
+                             "user": request.user.pk})
+            print(instance)
+            serializer = ExpenseDetailsSerializer(data=instance)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+        except MonthlySalary.DoesNotExist:
+            return Response({"message": "No salary found for corresponding month and year"})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
