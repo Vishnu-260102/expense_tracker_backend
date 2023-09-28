@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'models_logging',
     # user defined
     'accounts',
+    'expense_track',
 
 ]
 
@@ -69,6 +70,7 @@ MIDDLEWARE = [
 
 LOGGING_MODELS = (
     'accounts',
+    'expense_track',
 )
 
 LOGGING_EXCLUDE = (

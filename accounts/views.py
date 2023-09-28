@@ -190,9 +190,9 @@ class UserResetPassword(generics.GenericAPIView):
                 # MODE - ADMIN PASSWORD RESET / FORGOT
                 UserOTP.objects.create(user=user, otp_for=0, email_id=user.email,
                                        otp_code=OTP_code, expiry=timezone.now()+timedelta(minutes=5))
-                message = f"Visit this link to confirm your willingness to reset your password and to enter new password : \n {origin}/auth-reset/confirm_reset/{encOTP.decode()} . \n This link is valid for next 5 minutes only"
+                message = f"Visit this link to confirm your willingness to reset your password and to enter new password : \n {origin}/reset_password/confirm_reset/{encOTP.decode()} . \n This link is valid for next 5 minutes only"
                 html_message = render_to_string(
-                    'reset_email_template.html', {'origin': origin, "encOTP": encOTP, "name": user.first_name, "path": "auth-reset/confirm_reset"})
+                    'reset_email_template.html', {'origin': origin, "encOTP": encOTP, "name": user.first_name, "path": "reset_password/confirm_reset"})
                 send_mail(subject=subject, message=message,
                           from_email=settings.DEFAULT_FROM_EMAIL, recipient_list=[user.email], html_message=html_message)
                 # delete old OTPs created for passsword reset
