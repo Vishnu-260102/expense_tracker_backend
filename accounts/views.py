@@ -127,7 +127,7 @@ class UserOTPCreate(generics.GenericAPIView):
             return Response({"error_detail": ['Email already associated with another account']}, status=status.HTTP_400_BAD_REQUEST)
         otp = (randint(100000, 999999))
         # MODE - CREATE ADMIN OTP - now for Email verification for superadmin changed mail - / 1. profile change / 2.verification
-        UserOTP.objects.create(otp_for=otp_for, user=request.user.pk, otp_code=otp,
+        UserOTP.objects.create(otp_for=otp_for, user=request.user, otp_code=otp,
                                expiry=timezone.now() + timedelta(minutes=2), email_id=email)
         message = f'\n{request.user.first_name}, \n We received a request to update your email on the Expense Tracker. Please use the OTP {otp} to verify this email and complete the process.OTP is valid for 2 minutes only.'
         html_message = render_to_string('verify_email_otp.html', {
@@ -192,7 +192,7 @@ class UserResetPassword(generics.GenericAPIView):
                                        otp_code=OTP_code, expiry=timezone.now()+timedelta(minutes=5))
                 message = f"Visit this link to confirm your willingness to reset your password and to enter new password : \n {origin}/auth-reset/confirm_reset/{encOTP.decode()} . \n This link is valid for next 5 minutes only"
                 html_message = render_to_string(
-                    'reset_email_template.html', {'origin': origin, "encOTP": encOTP, "name": user.first_name, "account_type": "User", "path": "auth-reset/confirm_reset"})
+                    'reset_email_template.html', {'origin': origin, "encOTP": encOTP, "name": user.first_name, "path": "auth-reset/confirm_reset"})
                 send_mail(subject=subject, message=message,
                           from_email=settings.DEFAULT_FROM_EMAIL, recipient_list=[user.email], html_message=html_message)
                 # delete old OTPs created for passsword reset
