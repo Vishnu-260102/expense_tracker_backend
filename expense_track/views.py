@@ -53,10 +53,11 @@ class CurrentExpenseDetailsView(generics.GenericAPIView):
     serializer_class = ExpenseDetailsSerializer
 
     def get(self, request, *args, **kwargs):
-        queryset = ExpenseDetails.objects.filter(
-            month=request.data['month'], year=request.data['year'])
-        serializer = ExpenseDetailsSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if 'month' in request.query_params and 'year' in request.query_params:
+            queryset = ExpenseDetails.objects.filter(
+                month=request.query_params['month'], year=request.query_params['year'])
+            serializer = ExpenseDetailsSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **Kwargs):
         instance = {}
