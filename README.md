@@ -1,7 +1,6 @@
-### Jewellers Association Backend Based On Django Rest Framework [API]
+### Expense Tracker Backend Based On Django Rest Framework [API]
 ---
 
-**The Backend API will serve two sites :**
+**The Backend API will serve sites :**
 
-- Admin Panel
 - Public Site (Users)
