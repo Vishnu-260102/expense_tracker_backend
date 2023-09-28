@@ -43,3 +43,37 @@ class AdminSignInSerializer(serializers.Serializer):
             {"error_detail": [
                 "Incorrect username/password"]}
         )
+
+
+class UserSignInSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+    def validate(self, data):
+        email_validation = EmailValidator()
+        # check username is a Email Address
+        try:
+            email_validation(data['username'])
+            # Find username using the Email address provided
+            try:
+                username = User.objects.get(email=data['username']).username
+                data.update({"username": username})
+            except User.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"error_detail": [
+                        "Incorrect username/password"]}
+                )
+        except:
+            pass
+
+        user = authenticate(**data)
+        if user:
+            if user.is_active:
+                return user
+            raise serializers.ValidationError(
+                {"error_detail": [
+                    "Inactive Account"]})
+        raise serializers.ValidationError(
+            {"error_detail": [
+                "Incorrect username/password"]}
+        )
