@@ -23,8 +23,10 @@ class ExpenseDetails(models.Model):
     expense_name = models.CharField(max_length=100)
     expense_description = models.TextField()
     expense_date = models.DateField()
+    amount = models.CharField(max_length=100)
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
-    monthly_salary = models.ForeignKey('MonthlySalary', on_delete=models.PROTECT)
+    monthly_salary = models.ForeignKey(
+        'MonthlySalary', on_delete=models.PROTECT)
 
     def __str__(self) -> str:
         return 'Expense Details - ' + str(self.pk)
