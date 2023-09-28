@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate
 from models_logging.models import Change
 from django.core.validators import EmailValidator
 
-from accounts.models import Admin, User
+from accounts.models import Admin, User, LoginDetails
 
 
 # serializer for Admin sign in validation
@@ -77,3 +77,9 @@ class UserSignInSerializer(serializers.Serializer):
             {"error_detail": [
                 "Incorrect username/password"]}
         )
+
+
+class LoginDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LoginDetails
+        fields = '__all__'

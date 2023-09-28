@@ -24,8 +24,8 @@ from django.contrib.auth.hashers import make_password
 
 # local imports
 from custom.permissions import isAdmin, isSuperuser
-from accounts.models import Admin, AdminOTP, User, UserOTP
-from accounts.serializers import AdminSignInSerializer, UserSignInSerializer
+from accounts.models import Admin, AdminOTP, User, UserOTP, LoginDetails
+from accounts.serializers import AdminSignInSerializer, UserSignInSerializer, LoginDetailSerializer
 
 #
 dotenv.load_dotenv()
@@ -281,6 +281,55 @@ class UserChange(generics.GenericAPIView):
         request.user.first_name = request.data['name']
         request.user.save()
         return Response({"success": True, "message": "Profile Updated"}, status=status.HTTP_200_OK)
+
+
+class loginsessionView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        def get_ip_address(request):
+            user_ip_address = request.META.get('HTTP_X_FORWARDED_FOR')
+            if user_ip_address:
+                ip = user_ip_address.split(',')[0]
+            else:
+                ip = request.META.get('REMOTE_ADDR')
+            return ip
+        user_ip = get_ip_address(request)
+        print(user_ip)
+        print(request.user)
+    # Let's assume that the visitor uses an iPhone...
+        print(request.user_agent.is_mobile)  # returns True
+        print(request.user_agent.is_tablet)  # returns False
+        print(request.user_agent.is_touch_capable)  # returns True
+        print(request.user_agent.is_pc)  # returns False
+        print(request.user_agent.is_bot)  # returns False
+
+    # Accessing user agent's browser attributes
+        # returns Browser(family=u'Mobile Safari', version=(5, 1), version_string='5.1')
+        print(request.user_agent.browser)
+        print(request.user_agent.browser.family)  # returns 'Mobile Safari'
+        print(request.user_agent.browser.version)  # returns (5, 1)
+        print(request.user_agent.browser.version_string)   # returns '5.1'
+
+    # Operating System properties
+        # returns OperatingSystem(family=u'iOS', version=(5, 1), version_string='5.1')
+        print(request.user_agent.os)
+        print(request.user_agent.os.family)  # returns 'iOS'
+        print(request.user_agent.os.version)  # returns (5, 1)
+        print(request.user_agent.os.version_string)  # returns '5.1'
+
+    # Device properties
+        print(request.user_agent.device)  # returns Device(family='iPhone')
+        print(request.user_agent.device.family)  # returns 'iPhone'
+        print(request.user_agent.device.brand)  # returns 'iPhone'
+
+        return Response(status=status.HTTP_200_OK)
+
+    def get(self, request):
+        login_det = LoginDetails.objects.filter(
+            user=request.user).order_by('-pk')
+        serializer = LoginDetailSerializer(login_det, many=True)
+        return Response(serializer.data)
 
 
 # Get Admin user info:

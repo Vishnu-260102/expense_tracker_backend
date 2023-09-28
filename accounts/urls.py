@@ -4,7 +4,7 @@ from knox.views import LogoutView
 from accounts.views import (AdminChange, AdminChangePassword, AdminInfo,
                             AdminOTPCreate, AdminOTPVerify, AdminResetPassword, AdminSignInView, CheckTokenAPI,
                             UserChange, UserChangePassword, UserInfo, UserOTPCreate,
-                            UserOTPVerify, UserResetPassword, UserSignInView)
+                            UserOTPVerify, UserResetPassword, UserSignInView, loginsessionView)
 
 
 urlpatterns = [
@@ -41,4 +41,5 @@ urlpatterns = [
          name='user_verify_otp'),
     path('user_reset_pass/', UserResetPassword.as_view(),
          name='user_reset_passwd'),
+    path('auth/login_det/', loginsessionView.as_view(), name='login_det'),
 ]

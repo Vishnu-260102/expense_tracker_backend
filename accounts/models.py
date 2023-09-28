@@ -61,6 +61,31 @@ class UserOTP(models.Model):
 # Admin model is used to store Admin users
 
 
+class LoginDetails(models.Model):
+    detail_id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey('User',
+                             on_delete=models.CASCADE)
+    is_mobile = models.BooleanField(default=False)
+    is_tablet = models.BooleanField(default=False)
+    is_touch_capable = models.BooleanField(default=False)
+    is_pc = models.BooleanField(default=False)
+    is_bot = models.BooleanField(default=False)
+    browser_fam = models.CharField(max_length=50)
+    browser_ver = models.CharField(max_length=50)
+    os_fam = models.CharField(max_length=50)
+    os_ver = models.CharField(max_length=50)
+    device_fam = models.CharField(max_length=50)
+    device_brand = models.CharField(max_length=50, null=True)
+    ip_address = models.CharField(max_length=50)
+    signin_time = models.DateTimeField()
+
+    def __str__(self) -> str:
+        return 'Login Device Details - ' + str(self.pk)
+
+    class Meta:
+        db_table = "login_details"
+
+
 class Admin(models.Model):
     adminid = models.AutoField(primary_key=True)
     name = models.CharField(
