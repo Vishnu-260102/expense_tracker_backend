@@ -97,7 +97,9 @@ class CheckTokenAPI(generics.GenericAPIView):
 class UserInfo(generics.GenericAPIView):
     permission_classes = [AllowAny]
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs,):
+        data = {}
+        data2 = {}
         try:
             user = User.objects.get(id=request.user.pk)
         except User.DoesNotExist:
@@ -107,16 +109,32 @@ class UserInfo(generics.GenericAPIView):
         expiry = timezone.localtime(AuthToken.objects.get(
             token_key=request.auth.token_key).expiry)
         if (request.user.pass_updated != None):
-            data = {"user": {"username": request.user.username,
-                             "email": request.user.email,
-                             "name": request.user.first_name,
-                             "login_expiry": expiry, "email_verified": user.email_verified,
-                             "password_changed": datetime.strftime(request.user.pass_updated, '%Y-%m-%d %H:%M:%S')}}
+            data2.update({"username": request.user.username,
+                          "email": request.user.email,
+                          "name": request.user.first_name,
+                          "login_expiry": expiry, "email_verified": user.email_verified,
+                          "password_changed": datetime.strftime(request.user.pass_updated, '%Y-%m-%d %H:%M:%S')})
+            # data = {"user": {"username": request.user.username,
+            #                  "email": request.user.email,
+            #                  "name": request.user.first_name,
+            #                  "login_expiry": expiry, "email_verified": user.email_verified,
+            #                  "password_changed": datetime.strftime(request.user.pass_updated, '%Y-%m-%d %H:%M:%S')}}
         else:
-            data = {"user": {"username": request.user.username,
-                             "email": request.user.email,
-                             "name": request.user.first_name,
-                             "login_expiry": expiry, "email_verified": user.email_verified}}
+            data2.update({"username": request.user.username,
+                          "email": request.user.email,
+                          "name": request.user.first_name,
+                          "login_expiry": expiry, "email_verified": user.email_verified})
+            # data = {"user": {"username": request.user.username,
+            #                  "email": request.user.email,
+            #                  "name": request.user.first_name,
+            #                  "login_expiry": expiry, "email_verified": user.email_verified}}
+        if (Userhoto.objects.filter(user=user.pk).exists()):
+            photo = Userhoto.objects.filter(user=user.pk)
+            photo_serializer = UserPhotoSerializer(
+                photo, many=True, context={"request": request})
+            for datas in photo_serializer.data:
+                data2.update({"photo": datas['profile_photo']})
+        data.update({"user": data2})
         return Response({"data": data})
 
 

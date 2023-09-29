@@ -81,8 +81,8 @@ class Userhoto(models.Model):
     id = models.BigAutoField(primary_key=True)
     user = models.OneToOneField('User', on_delete=models.CASCADE, error_messages={
         "unique": "Profile Photo already exists. So, Try to Update it."})
-    profile_photo = models.ImageField(validators=[
-        user_img_restriction], upload_to=upload_pic, default='images/employee/user.png')
+    profile_photo = models.ImageField(
+        upload_to=upload_pic, default='images/user/user.png')
 
     def __str__(self) -> str:
         return 'User Profile Photo - ' + str(self.pk)
