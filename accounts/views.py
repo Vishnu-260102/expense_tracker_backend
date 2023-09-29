@@ -67,6 +67,22 @@ class UserSignInView(generics.GenericAPIView):
             email_verified = True
         else:
             email_verified = False
+
+        def get_ip_address(request):
+            user_ip_address = request.META.get('HTTP_X_FORWARDED_FOR')
+            if user_ip_address:
+                ip = user_ip_address.split(',')[0]
+            else:
+                ip = request.META.get('REMOTE_ADDR')
+            return ip
+        user_ip = get_ip_address(request)
+        LoginDetails.objects.create(
+            user=user, is_mobile=request.user_agent.is_mobile, is_tablet=request.user_agent.is_tablet,
+            is_touch_capable=request.user_agent.is_touch_capable, is_pc=request.user_agent.is_pc, is_bot=request.user_agent.is_bot,
+            browser_fam=request.user_agent.browser.family, browser_ver=request.user_agent.browser.version_string,
+            os_fam=request.user_agent.os.family, os_ver=request.user_agent.os.version_string,
+            device_fam=request.user_agent.device.family, device_brand=request.user_agent.device.brand,
+            signin_time=datetime.now(), ip_address=user_ip)
         return Response({"success": True, "message": "Login Successful", "email_verified": email_verified, "token": token, "login_expiry": expiry, "preferences": {}})
 
 
@@ -90,9 +106,15 @@ class UserInfo(generics.GenericAPIView):
         #     return Response({"error_detail": ['Admin User need to verify email first']}, status=status.HTTP_403_FORBIDDEN)
         expiry = timezone.localtime(AuthToken.objects.get(
             token_key=request.auth.token_key).expiry)
-        data = {"user": {"username": request.user.username,
-                         "email": request.user.email,
-                         "login_expiry": expiry, "email_verified": user.email_verified}}
+        if (request.user.pass_updated != None):
+            data = {"user": {"username": request.user.username,
+                             "email": request.user.email,
+                             "login_expiry": expiry, "email_verified": user.email_verified,
+                             "password_changed": datetime.strftime(request.user.pass_updated, '%Y-%m-%d %H:%M:%S')}}
+        else:
+            data = {"user": {"username": request.user.username,
+                             "email": request.user.email,
+                             "login_expiry": expiry, "email_verified": user.email_verified}}
         return Response({"data": data})
 
 
@@ -107,6 +129,7 @@ class UserChangePassword(generics.GenericAPIView):
             return Response({"error_detail": ['Incorrect password entered as Current Password']}, status=status.HTTP_400_BAD_REQUEST)
         user.set_password(request.data['new_password'])
         user.save()
+        User.objects.filter(id=user.id).update(pass_updated=datetime.now())
         # Delete all  Tokens of this user to logout from other Devices other than This Device/Browser --
         AuthToken.objects.filter(user=user).exclude(
             token_key=request.auth.token_key).delete()

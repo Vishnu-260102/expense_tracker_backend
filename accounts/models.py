@@ -13,6 +13,7 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=45, null=True, blank=True)
     email = models.EmailField(unique=True)
     email_verified = models.BooleanField(default=False)
+    pass_updated = models.DateTimeField(null=True, default=None)
 
     def __str__(self) -> str:
         return 'User - ' + str(self.pk)

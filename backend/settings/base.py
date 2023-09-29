@@ -65,6 +65,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'models_logging.middleware.LoggingStackMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
 
 ]
 
@@ -75,7 +76,8 @@ LOGGING_MODELS = (
 
 LOGGING_EXCLUDE = (
     'accounts.AdminOTP',     
-    'accounts.UserOTP',     
+    'accounts.UserOTP', 
+    'accounts.LoginDetails',    
 )
 
 
