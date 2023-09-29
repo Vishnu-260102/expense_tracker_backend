@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate
 from models_logging.models import Change
 from django.core.validators import EmailValidator
 
-from accounts.models import Admin, User, LoginDetails
+from accounts.models import Admin, User, LoginDetails, Userhoto
 
 
 # serializer for Admin sign in validation
@@ -82,4 +82,11 @@ class UserSignInSerializer(serializers.Serializer):
 class LoginDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = LoginDetails
+        fields = '__all__'
+
+
+class UserPhotoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Userhoto
         fields = '__all__'

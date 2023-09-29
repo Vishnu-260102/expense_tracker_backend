@@ -68,7 +68,7 @@ class CurrentExpenseDetailsView(generics.GenericAPIView):
             instance.update({"monthly_salary": monthly_salary.pk})
             instance.update({"month": request.data['month'], "year": request.data['year'], "expense_name": request.data['expense_name'],
                              "expense_description": request.data['expense_description'], "expense_date": request.data['expense_date'],
-                             "user": request.user.pk})
+                             "amount": request.data['amount'], "user": request.user.pk})
             print(instance)
             serializer = ExpenseDetailsSerializer(data=instance)
             serializer.is_valid(raise_exception=True)

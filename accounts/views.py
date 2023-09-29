@@ -24,8 +24,8 @@ from django.contrib.auth.hashers import make_password
 
 # local imports
 from custom.permissions import isAdmin, isSuperuser
-from accounts.models import Admin, AdminOTP, User, UserOTP, LoginDetails
-from accounts.serializers import AdminSignInSerializer, UserSignInSerializer, LoginDetailSerializer
+from accounts.models import Admin, AdminOTP, User, UserOTP, LoginDetails, Userhoto
+from accounts.serializers import AdminSignInSerializer, UserSignInSerializer, LoginDetailSerializer, UserPhotoSerializer
 
 #
 dotenv.load_dotenv()
@@ -566,3 +566,36 @@ class AdminResetPassword(generics.GenericAPIView):
                 return Response({"success": True, 'message': "Password is reset successfully"})
             return Response({"error_detail": ["Invalid/Expired link used. Please request reset link again"]}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"error_detail": []}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserPhotoAdd(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = UserPhotoSerializer
+    queryset = Userhoto.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        request.data.update({"user": request.user.pk})
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class UserPhotoDetails(generics.RetrieveUpdateAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = UserPhotoSerializer
+    queryset = Userhoto.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        photo = self.get_object()
+        serializer = self.get_serializer(photo)
+        return Response(serializer.data)
+
+    def put(self, request, *args, **kwargs):
+        photo = self.get_object()
+        request.data.update({"user": request.user.pk})
+        serializer = self.get_serializer(photo, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        photo.profile_photo.delete()
+        serializer.save()
+        return Response(serializer.data)
