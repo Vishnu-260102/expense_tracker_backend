@@ -109,11 +109,13 @@ class UserInfo(generics.GenericAPIView):
         if (request.user.pass_updated != None):
             data = {"user": {"username": request.user.username,
                              "email": request.user.email,
+                             "name": request.user.first_name,
                              "login_expiry": expiry, "email_verified": user.email_verified,
                              "password_changed": datetime.strftime(request.user.pass_updated, '%Y-%m-%d %H:%M:%S')}}
         else:
             data = {"user": {"username": request.user.username,
                              "email": request.user.email,
+                             "name": request.user.first_name,
                              "login_expiry": expiry, "email_verified": user.email_verified}}
         return Response({"data": data})
 
