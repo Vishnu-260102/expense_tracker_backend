@@ -31,10 +31,28 @@ class MonthlySalaryView(generics.GenericAPIView):
     serializer_class = MonthlySalarySerializer
 
     def get(self, request, *args, **kwargs):
-        monthly_salary = MonthlySalary.objects.filter(
-            year=request.data['year'], month=request.data['month'])
-        serializer = self.get_serializer(monthly_salary, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = {}
+        output = []
+        current_month = datetime.now().strftime("%B")
+        current_year = datetime.now().strftime("%Y")
+        # monthly_salary = MonthlySalary.objects.filter(
+        #         year=current_year).get(month=current_month)
+        # data.update()
+
+        try:
+            # monthly_salary = MonthlySalary.objects.filter(
+            #     year=current_year,month=current_month)
+            monthly_salary = MonthlySalary.objects.filter(
+                year=current_year).get(month=current_month)
+            serializer = self.get_serializer(monthly_salary, many=True)
+            data.update({"amount": monthly_salary.salary})
+            output.append(data)
+
+        except MonthlySalary.DoesNotExist:
+            data.update({"amount": "No salary added for current month"})
+            # return Response({"message": "No salary added"})
+            output.append(data)
+        return Response(output, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
         request.data.update({"user": request.user.pk})
