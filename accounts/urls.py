@@ -4,7 +4,8 @@ from knox.views import LogoutView
 from accounts.views import (AdminChange, AdminChangePassword, AdminInfo,
                             AdminOTPCreate, AdminOTPVerify, AdminResetPassword, AdminSignInView, CheckTokenAPI,
                             UserChange, UserChangePassword, UserInfo, UserOTPCreate,
-                            UserOTPVerify, UserResetPassword, UserSignInView, loginsessionView, UserPhotoDetails, UserPhotoAdd)
+                            UserOTPVerify, UserResetPassword, UserSignInView, loginsessionView, UserPhotoDetails, UserPhotoAdd,
+                            UserSignupView)
 
 
 urlpatterns = [
@@ -32,6 +33,8 @@ urlpatterns = [
          name='check_token_is_valid'),
     path('auth/user_info/', UserInfo.as_view(),
          name='get_user_info'),
+    path('auth/sign_up/', UserSignupView.as_view(),
+         name='sign_uo'),
     path('user_change_pass/', UserChangePassword.as_view(),
          name='change_user_pass'),
     path('user_change/', UserChange.as_view(), name='change_user_details'),

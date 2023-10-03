@@ -52,6 +52,31 @@ class AdminSignInView(generics.GenericAPIView):
         return Response({"success": True, "message": "Login Successful", "email_verified": email_verified, "token": token, "login_expiry": expiry, "preferences": {}})
 
 
+class UserSignupView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        username = request.data['username']
+        if (User.objects.filter(email=request.data['email']).exists()):
+            return Response({"error_detail": ["Email ID already in use."]}, status=status.HTTP_400_BAD_REQUEST)
+        if (User.objects.filter(username=username).exists()):
+            return Response({"error_detail": ["Username already Taken."]}, status=status.HTTP_400_BAD_REQUEST)
+        plain_passwd = request.data['con_pass']
+        passwd = make_password(plain_passwd)
+        name = request.data['first_name'] + request.data['last_name']
+        while User.objects.filter(username=username).exists():
+            username += str(randint(1, 99))
+        user = User.objects.create(first_name=request.data['first_name'], last_name=request.data['last_name'],
+                                   email=request.data['email'], email_verified=False, account_expiry=None,
+                                   username=username, password=passwd)
+        html_message = render_to_string('user_account_creation.html', {
+            "name": user.first_name, "username": user.username, "email": user.email})
+        send_mail(subject='Expense tracker account created', message='Welcome to expense tracker {}'.format(plain_passwd),
+                  html_message=html_message,
+                  from_email=settings.DEFAULT_FROM_EMAIL, recipient_list=[user.email])
+        return Response({"success": True, "message": "Account created successfully"}, status=status.HTTP_200_OK)
+
+
 class UserSignInView(generics.GenericAPIView):
     permission_classes = [AllowAny]
 
