@@ -20,4 +20,3 @@ tomli==2.0.1
 tzdata==2022.7
 ua-parser==0.16.1
 user-agents==2.2.0
-sorl-thumbnail==12.9.0
