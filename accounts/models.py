@@ -6,6 +6,7 @@ from dateutil.relativedelta import relativedelta
 import os
 from django.core.files.images import get_image_dimensions
 from django.core.exceptions import ValidationError
+from PIL import Image
 
 
 def upload_pic(instance, filename):
@@ -86,6 +87,16 @@ class Userhoto(models.Model):
 
     def __str__(self) -> str:
         return 'User Profile Photo - ' + str(self.pk)
+
+    def save(self, *args, **kwargs):
+        super().save()  # saving image first
+
+        img = Image.open(self.profile_photo.path)  # Open image using self
+        if img.height != 600 or img.width != 600:
+            new_img = (600, 600)
+            img.thumbnail(new_img)
+            img.save(self.profile_photo.path)
+        return super(Userhoto, self).save()
 
     class Meta:
         db_table = 'user_photo'
