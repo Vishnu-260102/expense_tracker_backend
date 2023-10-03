@@ -136,7 +136,7 @@ class UserInfo(generics.GenericAPIView):
         if (request.user.pass_updated != None):
             data2.update({"username": request.user.username,
                           "email": request.user.email,
-                          "name": request.user.first_name,
+                          "name": request.user.first_name + " " + request.user.last_name,
                           "login_expiry": expiry, "email_verified": user.email_verified,
                           "password_changed": datetime.strftime(request.user.pass_updated, '%Y-%m-%d %H:%M:%S')})
             # data = {"user": {"username": request.user.username,
@@ -147,7 +147,7 @@ class UserInfo(generics.GenericAPIView):
         else:
             data2.update({"username": request.user.username,
                           "email": request.user.email,
-                          "name": request.user.first_name,
+                          "name": request.user.first_name + " " + request.user.last_name,
                           "login_expiry": expiry, "email_verified": user.email_verified})
             # data = {"user": {"username": request.user.username,
             #                  "email": request.user.email,
