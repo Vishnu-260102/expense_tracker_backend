@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'knox',
     'models_logging',
+    'sorl.thumbnail',
     # user defined
     'accounts',
     'expense_track',
