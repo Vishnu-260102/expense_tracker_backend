@@ -165,3 +165,70 @@ class CurrentReportView(generics.GenericAPIView):
                 if cred_instance not in output:
                     output.append(cred_instance)
             return Response(output, status=status.HTTP_200_OK)
+
+
+class CalcData:
+    def __init__(self, cred_tot, exp_tot):
+        self.cred_tot = cred_tot
+        self.exp_tot = exp_tot
+
+    def get_entry(self):
+        return "{0} by {1}".format(self.cred_tot, self.exp_tot)
+
+
+class HistoryReportView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        output = []
+        all_salary_ids = []
+        curr_salary_id = []
+        salary_ids = [9, 12]
+        current_month = datetime.now().strftime("%B")
+        current_year = datetime.now().strftime("%Y")
+        current_month_id = MonthlySalary.objects.filter(
+            month=current_month, year=current_year, user=request.user.pk).get()
+
+        curr_salary_id.append(current_month_id.id)
+        monthly_salary = MonthlySalary.objects.filter(user=request.user.pk)
+        monthly_salary_serializer = MonthlySalarySerializer(
+            monthly_salary, many=True)
+        for x in range(len(monthly_salary_serializer.data)):
+            all_salary_ids.append(monthly_salary_serializer.data[x]['id'])
+        for y in all_salary_ids:
+            if y not in curr_salary_id:
+                salary_ids.append(y)
+
+        print(salary_ids)
+        for data in salary_ids:
+            instance = {}
+            print(data)
+            queryset = MonthlySalary.objects.filter(id=data)
+            serializer = MonthlySalarySerializer(queryset, many=True)
+            for month_data in serializer.data:
+                cred = CreditDetails.objects.filter(
+                    monthly_salary=month_data['id'])
+                cred_serializer = CreditDetailsSerializer(cred, many=True)
+                cred_total = 0
+                for i in range(len(cred_serializer.data)):
+                    cred_amnt = int(cred_serializer.data[i]['amount'])
+                    cred_total += cred_amnt
+                CalcData.cred_tot = cred_total
+
+                exp = ExpenseDetails.objects.filter(
+                    monthly_salary=month_data['id'])
+                exp_serializer = ExpenseDetailsSerializer(exp, many=True)
+                exp_total = 0
+                for j in range(len(exp_serializer.data)):
+                    exp_amnt = int(exp_serializer.data[j]['amount'])
+                    exp_total += exp_amnt
+                CalcData.exp_tot = exp_total
+
+            instance.update(
+                {"salary_id": month_data['id'], "month": month_data['month'], "year": month_data['year'], "salary": month_data['salary'],
+                 "exp_total": CalcData.exp_tot, "cred_total": CalcData.cred_tot})
+            if instance not in output:
+                output.append(instance)
+            print(CalcData.cred_tot)
+            print(CalcData.exp_tot)
+        return Response(output, status=status.HTTP_200_OK)
