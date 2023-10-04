@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MonthlySalary, ExpenseDetails
+from .models import MonthlySalary, ExpenseDetails, CreditDetails
 
 
 class MonthlySalarySerializer(serializers.ModelSerializer):
@@ -11,4 +11,10 @@ class MonthlySalarySerializer(serializers.ModelSerializer):
 class ExpenseDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExpenseDetails
+        fields = '__all__'
+
+
+class CreditDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CreditDetails
         fields = '__all__'

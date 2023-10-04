@@ -21,8 +21,8 @@ import dotenv
 import os
 from django.contrib.auth.hashers import make_password
 
-from .models import MonthlySalary, ExpenseDetails
-from .serializers import MonthlySalarySerializer, ExpenseDetailsSerializer
+from .models import MonthlySalary, ExpenseDetails, CreditDetails
+from .serializers import MonthlySalarySerializer, ExpenseDetailsSerializer, CreditDetailsSerializer
 
 
 class MonthlySalaryView(generics.GenericAPIView):
@@ -45,7 +45,8 @@ class MonthlySalaryView(generics.GenericAPIView):
             monthly_salary = MonthlySalary.objects.filter(
                 year=current_year, user=request.user.pk).get(month=current_month)
             serializer = self.get_serializer(monthly_salary, many=True)
-            data.update({"amount": monthly_salary.salary})
+            data.update({"id": monthly_salary.pk,
+                        "amount": monthly_salary.salary})
             output.append(data)
 
         except MonthlySalary.DoesNotExist:
@@ -94,3 +95,63 @@ class CurrentExpenseDetailsView(generics.GenericAPIView):
         except MonthlySalary.DoesNotExist:
             return Response({"message": "No salary found for corresponding month and year"})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class CurrentCreditDetailsView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+    queryset = CreditDetails.objects.all()
+    serializer_class = CreditDetailsSerializer
+
+    # def get(self, request, *args, **kwargs):
+    #     if 'month' in request.query_params and 'year' in request.query_params:
+    #         queryset = ExpenseDetails.objects.filter(
+    #             month=request.query_params['month'], year=request.query_params['year'], user=request.user.pk)
+    #         serializer = ExpenseDetailsSerializer(queryset, many=True)
+    #         return Response(serializer.data, status=status.HTTP_200_OK)
+    #     return Response(status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **Kwargs):
+        instance = {}
+        try:
+            monthly_salary = MonthlySalary.objects.filter(
+                year=request.data['year']).get(month=request.data['month'], user=request.user.pk)
+            instance.update({"monthly_salary": monthly_salary.pk})
+            instance.update({"month": request.data['month'], "year": request.data['year'], "credit_name": request.data['credit_name'],
+                             "credit_description": request.data['credit_description'], "credit_date": request.data['credit_date'],
+                             "amount": request.data['amount'], "user": request.user.pk})
+            print(instance)
+            serializer = CreditDetailsSerializer(data=instance)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+        except MonthlySalary.DoesNotExist:
+            return Response({"message": "No salary found for corresponding month and year"})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class CurrentReportView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        if 'month' in request.query_params and 'year' in request.query_params:
+            output = []
+            exp_queryset = ExpenseDetails.objects.filter(
+                month=request.query_params['month'], year=request.query_params['year'], user=request.user.pk)
+            exp_serializer = ExpenseDetailsSerializer(exp_queryset, many=True)
+            cred_queryset = CreditDetails.objects.filter(
+                month=request.query_params['month'], year=request.query_params['year'], user=request.user.pk)
+            cred_serializer = CreditDetailsSerializer(cred_queryset, many=True)
+
+            for exp_data in exp_serializer.data:
+                exp_instance = {}
+                exp_instance.update({"name": exp_data['expense_name'], "description": exp_data['expense_description'],
+                                     "date": exp_data['expense_date'], "exp_amount": exp_data['amount']})
+                if exp_instance not in output:
+                    output.append(exp_instance)
+
+            for cred_data in cred_serializer.data:
+                cred_instance = {}
+                cred_instance.update({"name": cred_data['credit_name'], "description": cred_data['credit_description'],
+                                     "date": cred_data['credit_date'], "cred_amount": cred_data['amount']})
+                if cred_instance not in output:
+                    output.append(cred_instance)
+            return Response(output, status=status.HTTP_200_OK)

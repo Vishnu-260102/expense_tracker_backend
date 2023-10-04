@@ -33,3 +33,22 @@ class ExpenseDetails(models.Model):
 
     class Meta:
         db_table = 'expense_details'
+
+
+class CreditDetails(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    month = models.CharField(max_length=20)
+    year = models.CharField(max_length=5)
+    credit_name = models.CharField(max_length=100)
+    credit_description = models.TextField()
+    credit_date = models.DateField()
+    amount = models.CharField(max_length=100)
+    user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
+    monthly_salary = models.ForeignKey(
+        'MonthlySalary', on_delete=models.PROTECT)
+
+    def __str__(self) -> str:
+        return 'Credit Details - ' + str(self.pk)
+
+    class Meta:
+        db_table = 'credit_details'
