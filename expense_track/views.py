@@ -134,6 +134,16 @@ class CurrentReportView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         if 'month' in request.query_params and 'year' in request.query_params:
             output = []
+            instance = {}
+            if (MonthlySalary.objects.filter(
+                    year=request.query_params['year'], month=request.query_params['month'], user=request.user.pk).exists()):
+                monthly_salary = MonthlySalary.objects.filter(
+                    year=request.query_params['year']).get(month=request.query_params['month'], user=request.user.pk)
+                instance.update(
+                    {"name": "Salary", "salary_amount": monthly_salary.salary,
+                     "date": monthly_salary.salary_date, "description": request.query_params['month']+" "+"Salary"})
+                if instance not in output:
+                    output.append(instance)
             exp_queryset = ExpenseDetails.objects.filter(
                 month=request.query_params['month'], year=request.query_params['year'], user=request.user.pk)
             exp_serializer = ExpenseDetailsSerializer(exp_queryset, many=True)

@@ -160,7 +160,7 @@ class UserInfo(generics.GenericAPIView):
             photo_serializer = UserPhotoSerializer(
                 photo, many=True, context={"request": request})
             for datas in photo_serializer.data:
-                data2.update({"photo": datas['profile_photo']})
+                data2.update({"photo": datas['profile_photo'],"photo_id":datas['id']})
         data.update({"user": data2})
         return Response({"data": data})
 
