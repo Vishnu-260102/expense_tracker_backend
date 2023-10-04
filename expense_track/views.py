@@ -183,7 +183,7 @@ class HistoryReportView(generics.GenericAPIView):
         output = []
         all_salary_ids = []
         curr_salary_id = []
-        salary_ids = [9, 12]
+        salary_ids = []
         current_month = datetime.now().strftime("%B")
         current_year = datetime.now().strftime("%Y")
         current_month_id = MonthlySalary.objects.filter(
