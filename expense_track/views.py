@@ -232,3 +232,50 @@ class HistoryReportView(generics.GenericAPIView):
             print(CalcData.cred_tot)
             print(CalcData.exp_tot)
         return Response(output, status=status.HTTP_200_OK)
+
+
+class HistoryCalcData:
+    def __init__(self, cred_tot, exp_tot):
+        self.cred_tot = cred_tot
+        self.exp_tot = exp_tot
+
+    def get_entry(self):
+        return "{0} by {1}".format(self.cred_tot, self.exp_tot)
+
+
+class HistoryReportDetailView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+    queryset = MonthlySalary.objects.all()
+    serializer_class = MonthlySalarySerializer
+
+    def get(self, request, *args, **kwargs):
+        if 'pk' in kwargs:
+            instance = {}
+            monthly_salary = self.get_object()
+            instance.update({"salary": monthly_salary.salary,
+                            "month": monthly_salary.month, "year": monthly_salary.year})
+            credit = CreditDetails.objects.filter(
+                monthly_salary=monthly_salary)
+            credit_seri = CreditDetailsSerializer(credit, many=True)
+            expense = ExpenseDetails.objects.filter(
+                monthly_salary=monthly_salary)
+            expense_seri = ExpenseDetailsSerializer(expense, many=True)
+
+            exp_total = 0
+            for j in range(len(expense_seri.data)):
+                exp_amnt = int(expense_seri.data[j]['amount'])
+                exp_total += exp_amnt
+            HistoryCalcData.exp_tot = exp_total
+            cred_total = 0
+            for i in range(len(credit_seri.data)):
+                cred_amnt = int(credit_seri.data[i]['amount'])
+                cred_total += cred_amnt
+            HistoryCalcData.cred_tot = cred_total
+
+            instance.update({"expenses": expense_seri.data})
+            instance.update({"credit": credit_seri.data})
+            instance.update({"credit_total": HistoryCalcData.cred_tot})
+            instance.update({"expense_total": HistoryCalcData.exp_tot})
+            return Response(instance, status=status.HTTP_200_OK)
+
+        return Response(status=status.HTTP_200_OK)
