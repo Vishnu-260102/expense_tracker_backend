@@ -345,12 +345,12 @@ class NotifyDetailsView(generics.GenericAPIView):
     permission_classes = [AllowAny]
     
     def get(self, request, *args, **kwargs):
+        output = []
         if (MonthlySalary.objects.filter(user = request.user.pk).exists()):
             sal_queryset = MonthlySalary.objects.filter(user = request.user.pk)
             sal_serializer = MonthlySalarySerializer(sal_queryset, many=True)
             salary = 0
             expense = 0
-            output = []
             for salaries in sal_serializer.data:
                 if (ExpenseDetails.objects.filter(monthly_salary = salaries['id']).exists()):
                     instance = {}
@@ -383,4 +383,4 @@ class NotifyDetailsView(generics.GenericAPIView):
                             if(len(output) > 3):
                                 output.pop(0)
             return Response(output, status= status.HTTP_200_OK)
-        return Response(status= status.HTTP_200_OK)
+        return Response(output, status= status.HTTP_200_OK)
