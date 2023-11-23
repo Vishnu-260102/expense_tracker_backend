@@ -88,7 +88,7 @@ class CurrentExpenseDetailsView(generics.GenericAPIView):
             instance.update({"month": request.data['month'], "year": request.data['year'], "expense_name": request.data['expense_name'],
                              "expense_description": request.data['expense_description'], "expense_date": request.data['expense_date'],
                              "amount": request.data['amount'], "user": request.user.pk})
-            print(instance)
+            # print(instance)
             serializer = ExpenseDetailsSerializer(data=instance)
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -119,7 +119,7 @@ class CurrentCreditDetailsView(generics.GenericAPIView):
             instance.update({"month": request.data['month'], "year": request.data['year'], "credit_name": request.data['credit_name'],
                              "credit_description": request.data['credit_description'], "credit_date": request.data['credit_date'],
                              "amount": request.data['amount'], "user": request.user.pk})
-            print(instance)
+            # print(instance)
             serializer = CreditDetailsSerializer(data=instance)
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -230,8 +230,8 @@ class HistoryReportView(generics.GenericAPIView):
                  "exp_total": CalcData.exp_tot, "cred_total": CalcData.cred_tot})
                 if instance not in output:
                     output.append(instance)
-                print(CalcData.cred_tot)
-                print(CalcData.exp_tot)
+                # print(CalcData.cred_tot)
+                # print(CalcData.exp_tot)
             return Response(output, status=status.HTTP_200_OK)
         return Response(output, status=status.HTTP_200_OK)
 
@@ -331,3 +331,56 @@ class ExpenseGraphView(generics.GenericAPIView):
         except MonthlySalary.DoesNotExist:
             return Response({"message": "No salary found for corresponding user for current year"})
         return Response(output,status=status.HTTP_200_OK)
+    
+
+class NotifyCalcData:
+    def __init__(self, sal_tot, exp_tot):
+        self.exp_tot = exp_tot
+        self.sal_tot = sal_tot
+
+    def get_entry(self):
+        return "{0} by {1}".format(self.sal_tot, self.exp_tot)
+    
+class NotifyDetailsView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request, *args, **kwargs):
+        if (MonthlySalary.objects.filter(user = request.user.pk).exists()):
+            sal_queryset = MonthlySalary.objects.filter(user = request.user.pk)
+            sal_serializer = MonthlySalarySerializer(sal_queryset, many=True)
+            salary = 0
+            expense = 0
+            output = []
+            for salaries in sal_serializer.data:
+                if (ExpenseDetails.objects.filter(monthly_salary = salaries['id']).exists()):
+                    instance = {}
+                    expense_query = ExpenseDetails.objects.filter(monthly_salary = salaries['id'])
+                    expense_seri = ExpenseDetailsSerializer(expense_query, many=True)
+                    salary = int(salaries['salary'])
+                    NotifyCalcData.sal_tot = salary
+            
+                    for i in range(len(expense_seri.data)):
+                        expense += int(expense_seri.data[i]['amount'])
+                    NotifyCalcData.exp_tot = expense
+                    expense = 0
+            
+                    # print(NotifyCalcData.sal_tot)
+                    # print(NotifyCalcData.exp_tot)
+            
+                    if (NotifyCalcData.sal_tot > NotifyCalcData.exp_tot):
+                        saved = NotifyCalcData.sal_tot - NotifyCalcData.exp_tot
+                        instance.update({"msg" : salaries['month'] + "," + salaries['year'] + " you have saved Rs." + str(saved)})
+                        if instance not in output:
+                            output.append(instance)
+                            if(len(output) > 3):
+                                output.pop(0)
+            
+                    if (NotifyCalcData.sal_tot < NotifyCalcData.exp_tot):
+                        exceed = NotifyCalcData.exp_tot - NotifyCalcData.sal_tot
+                        instance.update({"msg": salaries['month'] + "," + salaries['year'] + " your expense have exceeded Rs." + str(exceed)})
+                        if instance not in output:
+                            output.append(instance)
+                            if(len(output) > 3):
+                                output.pop(0)
+            return Response(output, status= status.HTTP_200_OK)
+        return Response(status= status.HTTP_200_OK)

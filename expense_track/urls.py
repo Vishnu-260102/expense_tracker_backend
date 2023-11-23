@@ -1,11 +1,12 @@
 from django.urls import path
 
 from .views import (MonthlySalaryView, CurrentExpenseDetailsView, CurrentCreditDetailsView, CurrentReportView, HistoryReportView,
-                    HistoryReportDetailView, ExpenseGraphView)
+                    HistoryReportDetailView, ExpenseGraphView, NotifyDetailsView)
 
 urlpatterns = [
     path('monthly_salary/', MonthlySalaryView.as_view(), name='monthly_salary'),
     path('expense_graph/', ExpenseGraphView.as_view(), name='expense_graph'),
+    path('notify_details/', NotifyDetailsView.as_view(), name='notify_details'),
     path('expense_details/', CurrentExpenseDetailsView.as_view(),
          name='expense_details'),
     path('credit_details/', CurrentCreditDetailsView.as_view(),
